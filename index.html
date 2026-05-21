@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SSV '99">
+<meta name="theme-color" content="#C0001A">
+<title>SSV '99 Trainer</title>
+<style>
+:root {
+  --red:#C0001A;--red-light:#FBEAEA;--red-dark:#7A0010;
+  --amber:#BA7517;--amber-light:#FAEEDA;
+  --coral:#D85A30;--coral-light:#FAECE7;
+  --bg:#F4F6F5;--card:#FFFFFF;--text:#1a1a1a;--text2:#6b7280;
+  --border:rgba(0,0,0,0.10);--radius:14px;--radius-sm:9px;
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+}
+@media(prefers-color-scheme:dark){:root:not(.light){
+  --bg:#0f1410;--card:#1c2420;--text:#f0f4f2;--text2:#8a9e96;
+  --border:rgba(255,255,255,0.10);--red-light:#3d0008;--red-dark:#f5a0a8;
+  --amber-light:#2d1f05;--coral-light:#2d1208;
+}}
+:root.dark{
+  --bg:#0f1410;--card:#1c2420;--text:#f0f4f2;--text2:#8a9e96;
+  --border:rgba(255,255,255,0.10);--red-light:#3d0008;--red-dark:#f5a0a8;
+  --amber-light:#2d1f05;--coral-light:#2d1208;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:calc(80px + var(--safe-bottom));overscroll-behavior:none;}
+.header{background:var(--red);color:white;padding:52px 20px 16px;position:sticky;top:0;z-index:50;}
+.header h1{font-size:22px;font-weight:700;letter-spacing:-0.5px;}
+.header p{font-size:13px;opacity:0.75;margin-top:2px;}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:0.5px solid var(--border);display:flex;padding-bottom:var(--safe-bottom);z-index:100;box-shadow:0 -2px 12px rgba(0,0,0,0.08);}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 0 8px;background:none;border:none;cursor:pointer;color:var(--text2);font-family:inherit;font-size:9px;gap:3px;-webkit-user-select:none;transition:color 0.15s;}
+.nav-btn svg{width:22px;height:22px;stroke-width:1.8;}
+.nav-btn.active{color:var(--red);}
+.nav-btn.active svg{stroke-width:2.2;}
+.section{display:none;padding:16px 16px 0;animation:fadeIn 0.2s ease;}
+.section.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.card{background:var(--card);border-radius:var(--radius);border:0.5px solid var(--border);margin-bottom:12px;overflow:hidden;}
+.card-header{padding:14px 16px 10px;font-size:13px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;border-bottom:0.5px solid var(--border);}
+.stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px;}
+.stat-card{background:var(--card);border-radius:var(--radius-sm);border:0.5px solid var(--border);padding:12px;text-align:center;}
+.stat-num{font-size:24px;font-weight:700;color:var(--red);}
+.stat-label{font-size:11px;color:var(--text2);margin-top:2px;}
+.list-row{display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:0.5px solid var(--border);}
+.list-row:last-child{border-bottom:none;}
+.avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;}
+.info{flex:1;min-width:0;}
+.info-name{font-size:15px;font-weight:600;}
+.info-sub{font-size:12px;color:var(--text2);margin-top:1px;}
+.badge{font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;flex-shrink:0;}
+.badge-green{background:var(--red-light);color:var(--red-dark);}
+.badge-amber{background:var(--amber-light);color:var(--amber);}
+.badge-coral{background:var(--coral-light);color:var(--coral);}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:11px 18px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--card);color:var(--text);font-size:15px;font-family:inherit;font-weight:500;cursor:pointer;-webkit-user-select:none;transition:opacity 0.1s;}
+.btn:active{opacity:0.7;}
+.btn-primary{background:var(--red);color:white;border-color:var(--red);}
+.btn-full{width:100%;justify-content:center;}
+.btn-sm{padding:8px 14px;font-size:13px;}
+.form-group{padding:14px 16px;border-bottom:0.5px solid var(--border);}
+.form-group:last-child{border-bottom:none;}
+.form-label{font-size:12px;color:var(--text2);font-weight:500;margin-bottom:6px;display:block;}
+input[type=text],input[type=number],input[type=date],input[type=time],textarea,select{width:100%;background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 13px;font-size:16px;font-family:inherit;color:var(--text);outline:none;-webkit-appearance:none;}
+input:focus,textarea:focus,select:focus{border-color:var(--red);}
+textarea{resize:vertical;min-height:80px;}
+.form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.check-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:14px 16px;}
+.check-item{display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--bg);border-radius:var(--radius-sm);border:0.5px solid var(--border);font-size:14px;cursor:pointer;-webkit-user-select:none;}
+.check-item input[type=checkbox]{width:18px;height:18px;accent-color:var(--red);flex-shrink:0;padding:0;}
+.training-row{padding:14px 16px;border-bottom:0.5px solid var(--border);}
+.training-row:last-child{border-bottom:none;}
+.training-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
+.training-date{font-size:14px;font-weight:600;}
+.tag{font-size:11px;padding:2px 8px;border-radius:10px;background:var(--red-light);color:var(--red-dark);font-weight:500;}
+.tag-turnier{background:#EEF2FF;color:#3730a3;}
+@media(prefers-color-scheme:dark){.tag-turnier{background:#1e1b4b;color:#a5b4fc;}}
+.training-note{font-size:13px;color:var(--text2);line-height:1.4;}
+.training-players{font-size:12px;color:var(--text2);margin-top:4px;}
+.att-dots{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px;}
+.dot{width:11px;height:11px;border-radius:50%;}
+.dot-present{background:var(--red);}
+.dot-absent{background:var(--border);}
+.wa-preview{background:#fbeaea;border-radius:var(--radius);padding:14px;margin:12px 16px;}
+.wa-bubble{background:white;border-radius:4px 14px 14px 14px;padding:10px 14px;font-size:14px;line-height:1.55;color:#111;white-space:pre-wrap;word-break:break-word;box-shadow:0 1px 3px rgba(0,0,0,0.1);}
+.wa-actions{display:flex;gap:8px;padding:0 16px 14px;flex-wrap:wrap;}
+.sec-title{font-size:17px;font-weight:700;margin:4px 0 12px;letter-spacing:-0.3px;}
+.del-btn{background:none;border:none;cursor:pointer;color:var(--text2);padding:6px;border-radius:6px;font-size:18px;line-height:1;display:flex;align-items:center;}
+.del-btn:active{color:var(--coral);background:var(--coral-light);}
+.toast{position:fixed;bottom:calc(90px + var(--safe-bottom));left:50%;transform:translateX(-50%);background:#1a1a1a;color:white;padding:10px 20px;border-radius:20px;font-size:14px;font-weight:500;opacity:0;transition:opacity 0.2s;z-index:999;white-space:nowrap;pointer-events:none;}
+.toast.show{opacity:1;}
+.empty{text-align:center;padding:36px 20px;color:var(--text2);font-size:14px;}
+.empty-icon{font-size:36px;margin-bottom:8px;}
+.info-box{background:var(--red-light);border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;color:var(--red-dark);line-height:1.45;margin:0 16px 14px;}
+
+/* Drag & Drop */
+.drag-handle{cursor:grab;color:var(--text2);font-size:20px;padding:4px 2px;line-height:1;display:flex;align-items:center;touch-action:none;}
+.drag-handle:active{cursor:grabbing;}
+.list-row.dragging{opacity:0.4;}
+.list-row.drag-over{border-top:2px solid var(--red);}
+
+/* Jahrgangsbadge */
+.jg-badge{font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;flex-shrink:0;}
+
+/* Statistik */
+.stat-bar-row{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:0.5px solid var(--border);}
+.stat-bar-row:last-child{border-bottom:none;}
+.stat-bar-name{font-size:13px;font-weight:600;width:80px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.stat-bar-wrap{flex:1;background:var(--bg);border-radius:20px;height:16px;overflow:hidden;}
+.stat-bar-fill{height:100%;border-radius:20px;transition:width 0.4s ease;}
+.stat-bar-num{font-size:12px;font-weight:600;width:36px;text-align:right;flex-shrink:0;}
+
+/* Tab switcher inside section */
+.inner-tabs{display:flex;gap:0;background:var(--bg);border-radius:var(--radius-sm);padding:3px;margin-bottom:14px;}
+.inner-tab{flex:1;padding:8px;border:none;background:none;border-radius:6px;font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;font-family:inherit;}
+.inner-tab.active{background:var(--card);color:var(--red);box-shadow:0 1px 3px rgba(0,0,0,0.1);}
+
+/* Legende */
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text2);}
+.legend-dot{width:10px;height:10px;border-radius:50%;}
+/* Custom confirm dialog */
+.confirm-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:500;display:flex;align-items:flex-end;justify-content:center;padding-bottom:calc(20px + var(--safe-bottom));}
+.confirm-box{background:var(--card);border-radius:var(--radius);width:calc(100% - 32px);max-width:400px;overflow:hidden;}
+.confirm-msg{padding:20px 20px 16px;font-size:15px;font-weight:500;text-align:center;color:var(--text);}
+.confirm-btns{display:grid;grid-template-columns:1fr 1fr;border-top:0.5px solid var(--border);}
+.confirm-btns button{padding:14px;border:none;background:none;font-size:15px;font-family:inherit;cursor:pointer;color:var(--red);font-weight:600;}
+.confirm-btns button:first-child{border-right:0.5px solid var(--border);color:var(--text2);font-weight:400;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+    <div>
+      <h1>⚽ Seeburger SV '99</h1>
+      <p id="header-sub">Mein Kader</p>
+    </div>
+    <button id="theme-toggle" onclick="toggleTheme()" style="background:rgba(255,255,255,0.2);border:none;border-radius:20px;padding:6px 12px;color:white;font-size:18px;cursor:pointer;margin-top:4px;-webkit-user-select:none;" title="Hell/Dunkel umschalten">🌙</button>
+  </div>
+</div>
+
+<!-- KADER -->
+<div id="sec-kader" class="section active">
+  <div class="stat-row">
+    <div class="stat-card"><div class="stat-num" id="s-spieler">0</div><div class="stat-label">Spieler</div></div>
+    <div class="stat-card"><div class="stat-num" id="s-trainings">0</div><div class="stat-label">Trainings</div></div>
+    <div class="stat-card"><div class="stat-num" id="s-turniere">0</div><div class="stat-label">Turniere</div></div>
+  </div>
+  <div id="jg-legend" class="legend"></div>
+  <div class="card">
+    <div class="card-header">Kader <span style="font-size:11px;font-weight:400;">(halten &amp; ziehen zum Sortieren)</span></div>
+    <div id="kader-list"></div>
+  </div>
+  <div class="card">
+    <div class="card-header">Spieler hinzufügen</div>
+    <div class="form-group">
+      <label class="form-label">Name</label>
+      <input type="text" id="n-name" placeholder="Vorname Nachname" autocomplete="off">
+    </div>
+    <div class="form-group">
+      <div class="form-row-2">
+        <div><label class="form-label">Jahrgang</label><input type="number" id="n-year" placeholder="z.B. 2016" min="2008" max="2022"></div>
+        <div><label class="form-label">Position</label><input type="text" id="n-pos" placeholder="z.B. Stürmer"></div>
+      </div>
+    </div>
+    <div class="form-group"><button class="btn btn-primary btn-full" onclick="addPlayer()">+ Hinzufügen</button></div>
+  </div>
+</div>
+
+<!-- ANWESENHEIT -->
+<div id="sec-anwesenheit" class="section">
+  <p class="sec-title">Anwesenheit</p>
+  <div id="att-content"></div>
+</div>
+
+<!-- TRAINING & TURNIERE -->
+<div id="sec-training" class="section">
+  <div class="inner-tabs">
+    <button class="inner-tab active" id="itab-training" onclick="switchInnerTab('training')">⚽ Training</button>
+    <button class="inner-tab" id="itab-turnier" onclick="switchInnerTab('turnier')">🏆 Turnier</button>
+  </div>
+
+  <!-- Training erfassen -->
+  <div id="inner-training">
+    <p class="sec-title">Training erfassen</p>
+    <div class="card">
+      <div class="form-group">
+        <div class="form-row-2">
+          <div><label class="form-label">Datum</label><input type="date" id="t-date"></div>
+          <div><label class="form-label">Thema</label><input type="text" id="t-topic" placeholder="z.B. Dribbling"></div>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">Notizen</label><textarea id="t-notes" placeholder="Was wurde trainiert? Übungen, Besonderheiten..."></textarea></div>
+      <div class="form-group" style="padding-bottom:8px;"><label class="form-label">Wer war dabei?</label></div>
+      <div class="check-grid" id="t-checklist"></div>
+      <div class="form-group"><button class="btn btn-primary btn-full" onclick="saveTraining()">💾 Training speichern</button></div>
+    </div>
+    <p class="sec-title" style="margin-top:4px;">Vergangene Trainings</p>
+    <div class="card" id="past-trainings"></div>
+  </div>
+
+  <!-- Turnier erfassen -->
+  <div id="inner-turnier" style="display:none;">
+    <p class="sec-title">Turnier erfassen</p>
+    <div class="card">
+      <div class="form-group">
+        <div class="form-row-2">
+          <div><label class="form-label">Datum</label><input type="date" id="tu-date"></div>
+          <div><label class="form-label">Turniername</label><input type="text" id="tu-name" placeholder="z.B. Stadtmeisterschaft"></div>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">Ort / Notizen</label><textarea id="tu-notes" placeholder="Ort, Ergebnis, Besonderheiten..."></textarea></div>
+      <div class="form-group" style="padding-bottom:8px;"><label class="form-label">Wer war dabei?</label></div>
+      <div class="check-grid" id="tu-checklist"></div>
+      <div class="form-group"><button class="btn btn-primary btn-full" onclick="saveTurnier()">💾 Turnier speichern</button></div>
+    </div>
+    <p class="sec-title" style="margin-top:4px;">Vergangene Turniere</p>
+    <div class="card" id="past-turniere"></div>
+  </div>
+</div>
+
+<!-- STATISTIK -->
+<div id="sec-statistik" class="section">
+  <p class="sec-title">Jahresstatistik</p>
+  <div id="stat-content"></div>
+</div>
+
+<!-- WHATSAPP -->
+<div id="sec-wa" class="section">
+  <div class="inner-tabs">
+    <button class="inner-tab active" id="watab-training" onclick="switchWaTab('training')">⚽ Training</button>
+    <button class="inner-tab" id="watab-turnier" onclick="switchWaTab('turnier')">🏆 Turnier</button>
+  </div>
+
+  <div id="wa-inner-training">
+    <div class="card">
+      <div class="form-group"><label class="form-label">Training-Datum</label><input type="date" id="wa-date"></div>
+      <div class="form-group"><div class="form-row-2">
+        <div><label class="form-label">Uhrzeit</label><input type="time" id="wa-time" value="17:00"></div>
+        <div><label class="form-label">Ort</label><input type="text" id="wa-ort" placeholder="Sportplatz"></div>
+      </div></div>
+      <div class="form-group"><button class="btn btn-primary btn-full" onclick="generateWA('training')">📋 Nachricht generieren</button></div>
+    </div>
+    <div id="wa-result-training" style="display:none;">
+      <div class="wa-preview"><div class="wa-bubble" id="wa-text-training"></div></div>
+      <div class="wa-actions">
+        <button class="btn btn-primary btn-sm" onclick="copyWA('training')">Kopieren</button>
+        <button class="btn btn-sm" onclick="openWA('training')">📲 WhatsApp öffnen</button>
+      </div>
+      <div class="info-box">💡 Mit „WhatsApp öffnen" wird der Text direkt vorausgefüllt – du musst nur noch auf Senden tippen.</div>
+    </div>
+  </div>
+
+  <div id="wa-inner-turnier" style="display:none;">
+    <div class="card">
+      <div class="form-group"><label class="form-label">Turnier-Datum</label><input type="date" id="wa-tu-date"></div>
+      <div class="form-group"><div class="form-row-2">
+        <div><label class="form-label">Uhrzeit</label><input type="time" id="wa-tu-time" value="09:00"></div>
+        <div><label class="form-label">Ort</label><input type="text" id="wa-tu-ort" placeholder="Sportanlage"></div>
+      </div></div>
+      <div class="form-group"><label class="form-label">Turniername (optional)</label><input type="text" id="wa-tu-name" placeholder="z.B. Stadtmeisterschaft"></div>
+      <div class="form-group"><button class="btn btn-primary btn-full" onclick="generateWA('turnier')">📋 Nachricht generieren</button></div>
+    </div>
+    <div id="wa-result-turnier" style="display:none;">
+      <div class="wa-preview"><div class="wa-bubble" id="wa-text-turnier"></div></div>
+      <div class="wa-actions">
+        <button class="btn btn-primary btn-sm" onclick="copyWA('turnier')">Kopieren</button>
+        <button class="btn btn-sm" onclick="openWA('turnier')">📲 WhatsApp öffnen</button>
+      </div>
+      <div class="info-box">💡 Mit „WhatsApp öffnen" wird der Text direkt vorausgefüllt – du musst nur noch auf Senden tippen.</div>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <button class="nav-btn active" onclick="showTab('kader',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    Kader
+  </button>
+  <button class="nav-btn" onclick="showTab('anwesenheit',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M9 16l2 2 4-4"/></svg>
+    Anwesenheit
+  </button>
+  <button class="nav-btn" onclick="showTab('training',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+    Training
+  </button>
+  <button class="nav-btn" onclick="showTab('statistik',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg>
+    Statistik
+  </button>
+  <button class="nav-btn" onclick="showTab('wa',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    Umfrage
+  </button>
+</nav>
+
+<div id="confirm-backdrop" class="confirm-backdrop" style="display:none;">
+  <div class="confirm-box">
+    <div class="confirm-msg" id="confirm-msg">Wirklich löschen?</div>
+    <div class="confirm-btns">
+      <button onclick="confirmResolve(false)">Abbrechen</button>
+      <button onclick="confirmResolve(true)">Löschen</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+let players = JSON.parse(localStorage.getItem('trainer_players') || 'null');
+let trainings = JSON.parse(localStorage.getItem('trainer_trainings') || '[]');
+let turniere = JSON.parse(localStorage.getItem('trainer_turniere') || '[]');
+
+if (!players) {
+  players = [
+    {id:1,name:'Lukas M.',year:2016,pos:'Stürmer'},
+    {id:2,name:'Felix S.',year:2017,pos:'Mittelfeld'},
+    {id:3,name:'Noah B.',year:2016,pos:'Torwart'},
+    {id:4,name:'Liam K.',year:2017,pos:'Verteidiger'},
+    {id:5,name:'Finn H.',year:2016,pos:'Stürmer'},
+  ];
+  save();
+}
+
+// Jahrgang → Farbe mapping (persistent, assigned on first encounter)
+const JG_PALETTES = [
+  {bg:'#FBEAEA',c:'#7A0010',bar:'#C0001A'},
+  {bg:'#E6F1FB',c:'#0C447C',bar:'#378ADD'},
+  {bg:'#EEEDFE',c:'#3C3489',bar:'#7F77DD'},
+  {bg:'#FAECE7',c:'#712B13',bar:'#D85A30'},
+  {bg:'#FAEEDA',c:'#633806',bar:'#EF9F27'},
+  {bg:'#FCEBEB',c:'#791F1F',bar:'#E24B4A'},
+  {bg:'#EAF3DE',c:'#27500A',bar:'#639922'},
+  {bg:'#FBEAF0',c:'#72243E',bar:'#D4537E'},
+];
+let jgColorMap = JSON.parse(localStorage.getItem('trainer_jgcolors') || '{}');
+
+function getJgColor(year) {
+  if (!jgColorMap[year]) {
+    const used = Object.keys(jgColorMap).length;
+    jgColorMap[year] = used % JG_PALETTES.length;
+    localStorage.setItem('trainer_jgcolors', JSON.stringify(jgColorMap));
+  }
+  return JG_PALETTES[jgColorMap[year]];
+}
+
+function save() {
+  localStorage.setItem('trainer_players', JSON.stringify(players));
+  localStorage.setItem('trainer_trainings', JSON.stringify(trainings));
+  localStorage.setItem('trainer_turniere', JSON.stringify(turniere));
+}
+
+function initials(n){return n.split(' ').map(p=>p[0]).join('').slice(0,2).toUpperCase();}
+function fmtDate(d){const[y,m,day]=d.split('-');const wd=['So','Mo','Di','Mi','Do','Fr','Sa'][new Date(d).getDay()];return`${wd}, ${day}.${m}.${y}`;}
+function fmtDateLong(d){const[y,m,day]=d.split('-');const wd=['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'][new Date(d).getDay()];return`${wd}, ${day}.${m}.${y}`;}
+
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000);}
+
+function showTab(name,btn){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('sec-'+name).classList.add('active');
+  btn.classList.add('active');
+  const titles={kader:'Mein Kader',anwesenheit:'Anwesenheit',training:'Training & Turniere',statistik:'Jahresstatistik',wa:'WhatsApp Umfrage'};
+  document.getElementById('header-sub').textContent=titles[name]||'';
+  if(name==='kader')renderKader();
+  if(name==='anwesenheit')renderAnwesenheit();
+  if(name==='training')renderTrainingSection();
+  if(name==='statistik')renderStatistik();
+}
+
+function switchInnerTab(tab){
+  ['training','turnier'].forEach(t=>{
+    document.getElementById('inner-'+t).style.display=t===tab?'block':'none';
+    document.getElementById('itab-'+t).classList.toggle('active',t===tab);
+  });
+  if(tab==='training')renderTrainingSection();
+  if(tab==='turnier')renderTurnierSection();
+}
+
+function switchWaTab(tab){
+  ['training','turnier'].forEach(t=>{
+    document.getElementById('wa-inner-'+t).style.display=t===tab?'block':'none';
+    document.getElementById('watab-'+t).classList.toggle('active',t===tab);
+  });
+}
+
+// ── KADER ────────────────────────────────
+function renderKader(){
+  const years=[...new Set(players.map(p=>p.year))].sort();
+  document.getElementById('s-spieler').textContent=players.length;
+  document.getElementById('s-trainings').textContent=trainings.length;
+  document.getElementById('s-turniere').textContent=turniere.length;
+
+  // Legend
+  const leg=document.getElementById('jg-legend');
+  leg.innerHTML=years.map(y=>{const col=getJgColor(y);return`<div class="legend-item"><div class="legend-dot" style="background:${col.bar}"></div>Jg. ${y}</div>`;}).join('');
+
+  const list=document.getElementById('kader-list');
+  if(!players.length){list.innerHTML='<div class="empty"><div class="empty-icon">👥</div>Noch keine Spieler eingetragen.</div>';return;}
+
+  list.innerHTML=players.map((p,i)=>{
+    const r=attRate(p.id,trainings);
+    const badge=r===null?'':r>=75?`<span class="badge badge-green">${r}%</span>`:r>=50?`<span class="badge badge-amber">${r}%</span>`:`<span class="badge badge-coral">${r}%</span>`;
+    const col=getJgColor(p.year);
+    return`<div class="list-row" draggable="true" data-idx="${i}" data-id="${p.id}"
+      ondragstart="dragStart(event,${i})" ondragover="dragOver(event)" ondrop="dropOn(event,${i})" ondragend="dragEnd()">
+      <span class="drag-handle" title="Ziehen zum Sortieren">⠿</span>
+      <div class="avatar" style="background:${col.bg};color:${col.c};">${initials(p.name)}</div>
+      <div class="info">
+        <div class="info-name">${p.name}</div>
+        <div class="info-sub" style="display:flex;align-items:center;gap:6px;">
+          <span style="background:${col.bg};color:${col.c};font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;">Jg. ${p.year}</span>
+          ${p.pos?`<span>${p.pos}</span>`:''}
+        </div>
+      </div>
+      ${badge}
+      <button class="del-btn" onclick="delPlayer(${p.id})">🗑</button>
+    </div>`;
+  }).join('');
+}
+
+function attRate(pid,list){
+  if(!list.length)return null;
+  return Math.round(list.filter(t=>t.present.map(Number).includes(Number(pid))).length/list.length*100);
+}
+
+function addPlayer(){
+  const name=document.getElementById('n-name').value.trim();
+  const year=parseInt(document.getElementById('n-year').value);
+  const pos=document.getElementById('n-pos').value.trim();
+  if(!name||!year){toast('❌ Bitte Name und Jahrgang angeben');return;}
+  getJgColor(year); // assign color now
+  players.push({id:Date.now(),name,year,pos});
+  save();
+  document.getElementById('n-name').value='';
+  document.getElementById('n-year').value='';
+  document.getElementById('n-pos').value='';
+  renderKader();
+  toast('✅ Spieler hinzugefügt');
+}
+
+// Custom confirm (replaces native confirm() which is blocked in iOS PWA)
+let _confirmResolve=null;
+function showConfirm(msg){
+  document.getElementById('confirm-msg').textContent=msg;
+  document.getElementById('confirm-backdrop').style.display='flex';
+  return new Promise(res=>{_confirmResolve=res;});
+}
+function confirmResolve(val){
+  document.getElementById('confirm-backdrop').style.display='none';
+  if(_confirmResolve)_confirmResolve(val);
+  _confirmResolve=null;
+}
+
+function delPlayer(id){
+  showConfirm('Spieler wirklich entfernen?').then(ok=>{
+    if(!ok)return;
+    const nid=Number(id);
+    players=players.filter(p=>Number(p.id)!==nid);
+    save();renderKader();
+  });
+}
+
+// Drag & Drop
+let dragIdx=null;
+function dragStart(e,i){dragIdx=i;setTimeout(()=>e.target.classList.add('dragging'),0);}
+function dragOver(e){e.preventDefault();}
+function dropOn(e,i){
+  e.preventDefault();
+  if(dragIdx===null||dragIdx===i)return;
+  const moved=players.splice(dragIdx,1)[0];
+  players.splice(i,0,moved);
+  dragIdx=null;
+  save();renderKader();
+}
+function dragEnd(){
+  document.querySelectorAll('.list-row').forEach(r=>r.classList.remove('dragging','drag-over'));
+  dragIdx=null;
+}
+
+// Touch drag for mobile
+let touchDragIdx=null,touchClone=null,touchRows=[];
+document.addEventListener('touchstart',e=>{
+  const handle=e.target.closest('.drag-handle');
+  if(!handle)return;
+  const row=handle.closest('.list-row');
+  if(!row)return;
+  touchDragIdx=parseInt(row.dataset.idx);
+  const rect=row.getBoundingClientRect();
+  touchClone=row.cloneNode(true);
+  touchClone.style.cssText=`position:fixed;left:${rect.left}px;top:${rect.top}px;width:${rect.width}px;opacity:0.85;z-index:999;pointer-events:none;background:var(--card);border-radius:var(--radius);box-shadow:0 4px 20px rgba(0,0,0,0.2);`;
+  document.body.appendChild(touchClone);
+  row.style.opacity='0.3';
+  touchRows=[...document.querySelectorAll('#kader-list .list-row')];
+},{passive:true});
+document.addEventListener('touchmove',e=>{
+  if(touchDragIdx===null||!touchClone)return;
+  e.preventDefault();
+  const touch=e.touches[0];
+  touchClone.style.top=(touch.clientY-30)+'px';
+  touchRows.forEach(r=>r.classList.remove('drag-over'));
+  const target=touchRows.find(r=>{const rect=r.getBoundingClientRect();return touch.clientY>rect.top&&touch.clientY<rect.bottom;});
+  if(target)target.classList.add('drag-over');
+},{passive:false});
+document.addEventListener('touchend',e=>{
+  if(touchDragIdx===null)return;
+  const touch=e.changedTouches[0];
+  const target=touchRows.find(r=>{const rect=r.getBoundingClientRect();return touch.clientY>rect.top&&touch.clientY<rect.bottom;});
+  if(target){
+    const toIdx=parseInt(target.dataset.idx);
+    if(toIdx!==touchDragIdx){const moved=players.splice(touchDragIdx,1)[0];players.splice(toIdx,0,moved);save();}
+  }
+  if(touchClone)touchClone.remove();
+  touchClone=null;touchDragIdx=null;
+  touchRows.forEach(r=>{r.style.opacity='';r.classList.remove('drag-over');});
+  renderKader();
+},{passive:true});
+
+// ── ANWESENHEIT ───────────────────────────
+function renderAnwesenheit(){
+  const el=document.getElementById('att-content');
+  if(!players.length){el.innerHTML='<div class="empty"><div class="empty-icon">📅</div>Noch keine Spieler.</div>';return;}
+  if(!trainings.length&&!turniere.length){el.innerHTML='<div class="empty"><div class="empty-icon">📅</div>Noch keine Trainings oder Turniere erfasst.</div>';return;}
+  const allEvents=[...trainings.map(t=>({...t,type:'training'})),...turniere.map(t=>({...t,type:'turnier'}))].sort((a,b)=>a.date.localeCompare(b.date));
+  el.innerHTML=players.map(p=>{
+    const col=getJgColor(p.year);
+    const tTotal=trainings.length,tPres=trainings.filter(t=>t.present.includes(p.id)).length;
+    const tuTotal=turniere.length,tuPres=turniere.filter(t=>t.present.includes(p.id)).length;
+    const dots=allEvents.map(ev=>{
+      const present=ev.present.includes(p.id);
+      const color=ev.type==='turnier'?(present?'#7F77DD':'#EEEDFE'):(present?'#C0001A':'rgba(0,0,0,0.12)');
+      return`<div class="dot" style="background:${color}" title="${ev.date} (${ev.type==='turnier'?'Turnier':'Training'})"></div>`;
+    }).join('');
+    const tRate=tTotal?Math.round(tPres/tTotal*100):null;
+    const badge=tRate===null?'':tRate>=75?`<span class="badge badge-green">${tRate}%</span>`:tRate>=50?`<span class="badge badge-amber">${tRate}%</span>`:`<span class="badge badge-coral">${tRate}%</span>`;
+    return`<div class="card" style="margin-bottom:10px;">
+      <div class="list-row" style="padding:12px 16px;">
+        <div class="avatar" style="background:${col.bg};color:${col.c};width:36px;height:36px;font-size:13px;">${initials(p.name)}</div>
+        <div class="info">
+          <div class="info-name">${p.name}</div>
+          <div class="info-sub">⚽ ${tPres}/${tTotal} · 🏆 ${tuPres}/${tuTotal}</div>
+        </div>
+        ${badge}
+      </div>
+      <div style="padding:0 16px 12px;">
+        <div style="font-size:11px;color:var(--text2);margin-bottom:4px;">🟢 Training &nbsp;🟣 Turnier &nbsp;⬜ Fehlend</div>
+        <div class="att-dots">${dots}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── TRAINING ──────────────────────────────
+function renderTrainingSection(){
+  if(!document.getElementById('t-date').value)
+    document.getElementById('t-date').value=new Date().toISOString().slice(0,10);
+  document.getElementById('t-checklist').innerHTML=players.map(p=>{
+    const col=getJgColor(p.year);
+    return`<label class="check-item"><input type="checkbox" class="tcheck" value="${p.id}">
+      <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${col.bar};flex-shrink:0;"></span>
+      ${p.name}</label>`;
+  }).join('');
+  const el=document.getElementById('past-trainings');
+  if(!trainings.length){el.innerHTML='<div class="empty"><div class="empty-icon">📋</div>Noch keine Trainings.</div>';return;}
+  el.innerHTML=[...trainings].sort((a,b)=>b.date.localeCompare(a.date)).map(t=>{
+    const names=t.present.map(id=>players.find(p=>p.id===id)?.name).filter(Boolean);
+    return`<div class="training-row">
+      <div class="training-top">
+        <span class="training-date">${fmtDate(t.date)}</span>
+        <div style="display:flex;align-items:center;gap:8px;">
+          ${t.topic?`<span class="tag">${t.topic}</span>`:''}
+          <button class="del-btn" onclick="delTraining('${t.id}')">🗑</button>
+        </div>
+      </div>
+      ${t.notes?`<div class="training-note">${t.notes}</div>`:''}
+      <div class="training-players">👥 ${names.length?names.join(', '):'–'} <span style="color:var(--red);font-weight:600;">(${names.length}/${players.length})</span></div>
+    </div>`;
+  }).join('');
+}
+
+function saveTraining(){
+  const date=document.getElementById('t-date').value;
+  const topic=document.getElementById('t-topic').value.trim();
+  const notes=document.getElementById('t-notes').value.trim();
+  const present=[...document.querySelectorAll('.tcheck:checked')].map(e=>parseInt(e.value));
+  if(!date){toast('❌ Bitte Datum angeben');return;}
+  trainings=trainings.filter(t=>t.date!==date);
+  trainings.push({id:Date.now().toString(),date,topic,notes,present});
+  save();
+  document.getElementById('t-topic').value='';
+  document.getElementById('t-notes').value='';
+  renderTrainingSection();
+  toast('✅ Training gespeichert');
+}
+
+function delTraining(id){
+  showConfirm('Training wirklich löschen?').then(ok=>{
+    if(!ok)return;
+    trainings=trainings.filter(t=>t.id!==id);
+    save();renderTrainingSection();
+  });
+}
+
+// ── TURNIERE ──────────────────────────────
+function renderTurnierSection(){
+  if(!document.getElementById('tu-date').value)
+    document.getElementById('tu-date').value=new Date().toISOString().slice(0,10);
+  document.getElementById('tu-checklist').innerHTML=players.map(p=>{
+    const col=getJgColor(p.year);
+    return`<label class="check-item"><input type="checkbox" class="tucheck" value="${p.id}">
+      <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${col.bar};flex-shrink:0;"></span>
+      ${p.name}</label>`;
+  }).join('');
+  const el=document.getElementById('past-turniere');
+  if(!turniere.length){el.innerHTML='<div class="empty"><div class="empty-icon">🏆</div>Noch keine Turniere.</div>';return;}
+  el.innerHTML=[...turniere].sort((a,b)=>b.date.localeCompare(a.date)).map(t=>{
+    const names=t.present.map(id=>players.find(p=>p.id===id)?.name).filter(Boolean);
+    return`<div class="training-row">
+      <div class="training-top">
+        <span class="training-date">${fmtDate(t.date)}</span>
+        <div style="display:flex;align-items:center;gap:8px;">
+          ${t.name?`<span class="tag tag-turnier">🏆 ${t.name}</span>`:''}
+          <button class="del-btn" onclick="delTurnier('${t.id}')">🗑</button>
+        </div>
+      </div>
+      ${t.notes?`<div class="training-note">${t.notes}</div>`:''}
+      <div class="training-players">👥 ${names.length?names.join(', '):'–'} <span style="color:#7F77DD;font-weight:600;">(${names.length}/${players.length})</span></div>
+    </div>`;
+  }).join('');
+}
+
+function saveTurnier(){
+  const date=document.getElementById('tu-date').value;
+  const name=document.getElementById('tu-name').value.trim();
+  const notes=document.getElementById('tu-notes').value.trim();
+  const present=[...document.querySelectorAll('.tucheck:checked')].map(e=>parseInt(e.value));
+  if(!date){toast('❌ Bitte Datum angeben');return;}
+  turniere=turniere.filter(t=>t.date!==date);
+  turniere.push({id:Date.now().toString(),date,name,notes,present});
+  save();
+  document.getElementById('tu-name').value='';
+  document.getElementById('tu-notes').value='';
+  renderTurnierSection();
+  toast('✅ Turnier gespeichert');
+}
+
+function delTurnier(id){
+  showConfirm('Turnier wirklich löschen?').then(ok=>{
+    if(!ok)return;
+    turniere=turniere.filter(t=>t.id!==id);
+    save();renderTurnierSection();
+  });
+}
+
+// ── STATISTIK ─────────────────────────────
+function renderStatistik(){
+  const el=document.getElementById('stat-content');
+  if(!players.length){el.innerHTML='<div class="empty"><div class="empty-icon">📊</div>Noch keine Spieler.</div>';return;}
+
+  const tTotal=trainings.length,tuTotal=turniere.length,total=tTotal+tuTotal;
+
+  // Summary cards
+  let html=`<div class="stat-row">
+    <div class="stat-card"><div class="stat-num">${tTotal}</div><div class="stat-label">Trainings</div></div>
+    <div class="stat-card"><div class="stat-num">${tuTotal}</div><div class="stat-label">Turniere</div></div>
+    <div class="stat-card"><div class="stat-num">${total}</div><div class="stat-label">Gesamt</div></div>
+  </div>`;
+
+  if(!total){el.innerHTML=html+'<div class="empty"><div class="empty-icon">📊</div>Noch keine Events erfasst.</div>';return;}
+
+  // Sort players by attendance desc
+  const ranked=[...players].map(p=>{
+    const tPres=trainings.filter(t=>t.present.includes(p.id)).length;
+    const tuPres=turniere.filter(t=>t.present.includes(p.id)).length;
+    return{...p,tPres,tuPres,totalPres:tPres+tuPres};
+  }).sort((a,b)=>b.totalPres-a.totalPres);
+
+  html+=`<div class="card"><div class="card-header">Training-Anwesenheit (nach Anzahl)</div><div>`;
+  html+=ranked.map(p=>{
+    const col=getJgColor(p.year);
+    const pct=tTotal?Math.round(p.tPres/tTotal*100):0;
+    return`<div class="stat-bar-row">
+      <div class="stat-bar-name" title="${p.name}">${p.name.split(' ')[0]}</div>
+      <div class="stat-bar-wrap"><div class="stat-bar-fill" style="width:${pct}%;background:${col.bar};"></div></div>
+      <div class="stat-bar-num" style="color:${col.bar};">${p.tPres}/${tTotal}</div>
+    </div>`;
+  }).join('');
+  html+=`</div></div>`;
+
+  if(tuTotal){
+    html+=`<div class="card"><div class="card-header">Turnier-Teilnahme</div><div>`;
+    html+=ranked.map(p=>{
+      const col=getJgColor(p.year);
+      const pct=Math.round(p.tuPres/tuTotal*100);
+      return`<div class="stat-bar-row">
+        <div class="stat-bar-name" title="${p.name}">${p.name.split(' ')[0]}</div>
+        <div class="stat-bar-wrap"><div class="stat-bar-fill" style="width:${pct}%;background:#7F77DD;"></div></div>
+        <div class="stat-bar-num" style="color:#7F77DD;">${p.tuPres}/${tuTotal}</div>
+      </div>`;
+    }).join('');
+    html+=`</div></div>`;
+  }
+
+  // By Jahrgang
+  const years=[...new Set(players.map(p=>p.year))].sort();
+  if(years.length>1){
+    html+=`<div class="card"><div class="card-header">Nach Jahrgang (Ø Trainings)</div><div>`;
+    html+=years.map(y=>{
+      const col=getJgColor(y);
+      const grp=players.filter(p=>p.year===y);
+      const avg=grp.length?Math.round(grp.reduce((s,p)=>s+trainings.filter(t=>t.present.includes(p.id)).length,0)/grp.length):0;
+      const pct=tTotal?Math.round(avg/tTotal*100):0;
+      return`<div class="stat-bar-row">
+        <div class="stat-bar-name">Jg. ${y}</div>
+        <div class="stat-bar-wrap"><div class="stat-bar-fill" style="width:${pct}%;background:${col.bar};"></div></div>
+        <div class="stat-bar-num" style="color:${col.bar};">${avg}/${tTotal}</div>
+      </div>`;
+    }).join('');
+    html+=`</div></div>`;
+  }
+
+  el.innerHTML=html;
+}
+
+// ── WHATSAPP ──────────────────────────────
+window._waTexts={};
+function generateWA(type){
+  const isT=type==='training';
+  const d=document.getElementById(isT?'wa-date':'wa-tu-date').value;
+  const t=document.getElementById(isT?'wa-time':'wa-tu-time').value;
+  const ort=document.getElementById(isT?'wa-ort':'wa-tu-ort').value.trim()||(isT?'Sportplatz':'Sportanlage');
+  if(!d){toast('❌ Bitte Datum angeben');return;}
+  let text;
+  if(isT){
+    text=`⚽ *Training-Umfrage*\n\nHallo zusammen! Wer ist *${fmtDateLong(d)}* beim Training dabei?\n\n🕐 Uhrzeit: ${t} Uhr\n📍 Ort: ${ort}\n\nBitte kurz Bescheid geben:\n✅ Ich bin dabei\n❌ Ich kann nicht kommen\n\nBitte auch Bescheid geben, wenn jemand zu spät kommt. Danke! 🙏`;
+  } else {
+    const name=document.getElementById('wa-tu-name').value.trim();
+    text=`🏆 *Turnier-Umfrage*\n\nHallo zusammen! Wer ist *${fmtDateLong(d)}* beim Turnier${name?' „'+name+'"':''} dabei?\n\n🕐 Uhrzeit: ${t} Uhr\n📍 Ort: ${ort}\n\nBitte kurz Bescheid geben:\n✅ Ich bin dabei\n❌ Ich kann nicht kommen\n\nBitte so früh wie möglich Bescheid geben. Danke! 🙏`;
+  }
+  document.getElementById('wa-text-'+type).textContent=text;
+  document.getElementById('wa-result-'+type).style.display='block';
+  window._waTexts[type]=text;
+}
+function copyWA(type){navigator.clipboard.writeText(window._waTexts[type]||'').then(()=>toast('✅ Text kopiert!'));}
+function openWA(type){window.open('https://wa.me/?text='+encodeURIComponent(window._waTexts[type]||''),'_blank');}
+
+// Theme toggle
+const root=document.documentElement;
+function applyTheme(mode){
+  root.classList.remove('dark','light');
+  if(mode==='dark'){root.classList.add('dark');document.getElementById('theme-toggle').textContent='☀️';}
+  else if(mode==='light'){root.classList.add('light');document.getElementById('theme-toggle').textContent='🌙';}
+  else{document.getElementById('theme-toggle').textContent=window.matchMedia('(prefers-color-scheme:dark)').matches?'☀️':'🌙';}
+}
+function toggleTheme(){
+  const cur=localStorage.getItem('trainer_theme')||'auto';
+  const sys=window.matchMedia('(prefers-color-scheme:dark)').matches;
+  let next;
+  if(cur==='auto')next=sys?'light':'dark';
+  else if(cur==='dark')next='light';
+  else next='dark';
+  localStorage.setItem('trainer_theme',next);
+  applyTheme(next);
+}
+applyTheme(localStorage.getItem('trainer_theme')||'auto');
+
+// Init
+renderKader();
+</script>
+</body>
+</html>
